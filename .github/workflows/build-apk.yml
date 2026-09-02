@@ -19,9 +19,12 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Fix gradlew and build
+    - name: Debug and Build
       run: |
-        # Исправляем переносы строк, если они сбились, и даем права на запуск
+        echo "--- ПРОВЕРКА СТРУКТУРЫ ФАЙЛОВ ---"
+        ls -la
+        ls -la app/src/main/ || echo "ОШИБКА: Папка app/src/main/ не найдена!"
+        
         if [ -f gradlew ]; then
           sed -i -e 's/\r$//' gradlew
           chmod +x gradlew
@@ -29,10 +32,6 @@ jobs:
           sudo apt-get update && sudo apt-get install -y gradle
           gradle wrapper
         fi
-        ./gradlew assembleDebug --no-daemon
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        
+        echo "--- ЗАПУСК СБОРКИ С ПОДРОБНЫМИ ОШИБКАМИ ---"
+        ./gradlew assembleDebug --stacktrace
