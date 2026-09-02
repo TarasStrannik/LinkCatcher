@@ -19,20 +19,19 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-
-    - name: Build Debug APK
+    - name: Fix gradlew and build
       run: |
-        # Если файл gradlew сломан или отсутствует, создаем его заново правильно
-        if [ ! -x "./gradlew" ]; then
-          echo "Создаем gradlew заново..."
+        # Исправляем переносы строк, если они сбились, и даем права на запуск
+        if [ -f gradlew ]; then
+          sed -i -e 's/\r$//' gradlew
+          chmod +x gradlew
+        else
+          sudo apt-get update && sudo apt-get install -y gradle
           gradle wrapper
         fi
-        chmod +x ./gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug --no-daemon
 
-    - name: Upload APK Artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
